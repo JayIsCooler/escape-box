@@ -10,20 +10,11 @@ using static UnityEngine.GraphicsBuffer;
 
 public class MyOsc : MonoBehaviour
 {
-
     public extOSC.OSCReceiver oscReceiver;
     public extOSC.OSCTransmitter oscTransmitter;
-    public GameObject bonhomme;
-    public GameObject boite;
-    public GameObject vision;
-    public GameObject portesOuvertes;
-    public GameObject portesFermer;
-    public GameObject son;
-    public float saut = 35f; 
-    Rigidbody2D body;
-    float autreValeur = 1;
-    public float speedMultiplier = -7f;
-    float lightOn;
+
+    public GameObject sphere;
+
     public static float ScaleValue(float value, float inputMin, float inputMax, float outputMin, float outputMax)
     {
         return Mathf.Clamp(((value - inputMin) / (inputMax - inputMin) * (outputMax - outputMin) + outputMin), outputMin, outputMax);
@@ -31,7 +22,6 @@ public class MyOsc : MonoBehaviour
 
     void RotationMessageReceived(OSCMessage oscMessage)
     {
-
         float value;
         if (oscMessage.Values[0].Type == OSCValueType.Int)
         {
@@ -46,10 +36,26 @@ public class MyOsc : MonoBehaviour
             return;
         }
 
-        
-        body.AddTorque(value * speedMultiplier);
+        //Debug.Log(value);
+
+        float Rotation = sphere.transform.eulerAngles.x; ;
+
+        if (value < 0)
+        {
+            sphere.transform.eulerAngles = new Vector3( Rotation - 10, sphere.transform.rotation.y ,sphere.transform.rotation.z);
+            Debug.Log("tourne à gauche");
+        }
+        else if (value > 0)
+        {
+            sphere.transform.eulerAngles = new Vector3(Rotation + 10, sphere.transform.rotation.y, sphere.transform.rotation.z);
+            Debug.Log("tourne à Droite");
+        }
+
     }
 
+
+
+    /**
     void ButtonMessageReceived(OSCMessage oscMessage)
     {
         float value;
@@ -108,10 +114,6 @@ public class MyOsc : MonoBehaviour
         opacite = 1.3f - opacite;
         vision.GetComponent<SpriteRenderer>().material.color = new Color(1f, 1f, 1f, opacite);
 
-
-
-
-
     }
 
     void PotMessageReceived(OSCMessage oscMessage)
@@ -123,38 +125,54 @@ public class MyOsc : MonoBehaviour
         Debug.Log(valeur);
     }
 
+    **/
 
     // Start is called before the first frame update
     void Start()
     {
-        body = bonhomme.GetComponent<Rigidbody2D>();
-        oscReceiver.Bind("/encoder", RotationMessageReceived);
-        oscReceiver.Bind("/key", ButtonMessageReceived);
-        oscReceiver.Bind("/light", lightMessageReceived);
-        oscReceiver.Bind("/pot", PotMessageReceived);
-    }
-
  
+        oscReceiver.Bind("/encoder", RotationMessageReceived);
+        //oscReceiver.Bind("/key", ButtonMessageReceived);
+       //scReceiver.Bind("/light", lightMessageReceived);
+       //scReceiver.Bind("/pot", PotMessageReceived);
+    }
 
     // Update is called once per frame
     void Update()
     {
-        
+        /**
+         * 
+         * 
+         * FUNCTION WEIRD QUE J'AI UTILISER LA DERNIERE FOIS POUR LA ROTATION
+         * 
+         * 
+        float Rotation;
+        if (sphere.transform.eulerAngles.x <= 180f)
+        {
+            Rotation = sphere.transform.eulerAngles.x;
+        }
+        else
+        {
+            Rotation = sphere.transform.eulerAngles.x - 360f;
+        }
+        Debug.Log("Rotation avec function "+Rotation);
+        Debug.Log("blblblblblb " + sphere.transform.eulerAngles.x);
+        **/
     }
 
     float startChrono;
 
     void LateUpdate()
     {
-        float position = boite.transform.position.x;
-        position = ScaleValue(position, -7, 7, 0, 255);
+     // float position = boite.transform.position.x;
+     // position = ScaleValue(position, -7, 7, 0, 255);
 
         
 
         if(Time.realtimeSinceStartup - startChrono > 0.050f){
             startChrono = Time.realtimeSinceStartup;
             extOSC.OSCMessage message = new OSCMessage("/pixel");
-            message.AddValue(extOSC.OSCValue.Int((int)lightOn));
+     //     message.AddValue(extOSC.OSCValue.Int((int)lightOn));
             oscTransmitter.Send(message);
         }
   
