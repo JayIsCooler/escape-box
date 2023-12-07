@@ -32,21 +32,63 @@ public class MyOsc : MonoBehaviour
     private bool roche3Combinaison;
     private bool roche4Combinaison;
 
+    public GameObject[] ligne1;
+    public GameObject[] ligne2;
+    public GameObject[] ligne3;
+    public GameObject[] ligne4;
+    private bool btnLigheEtat;
+    private int lignePosition = 0;
+
     public GameObject[] rochesArr;
 
 
     void Start()
-    {   
+    {
         oscReceiver.Bind("/encoder", RotationMessageReceived);
         oscReceiver.Bind("/key1", ButtonMessageReceived);
         oscReceiver.Bind("/key2", BtnChangementPierre);
+        oscReceiver.Bind("/key3", BtnChangementLigne);
         oscReceiver.Bind("/light", lightMessageReceived);
         oscReceiver.Bind("/pot", PotMessageReceived);
+        oscReceiver.Bind("/tof", ControleMusique);
     }
     public static float ScaleValue(float value, float inputMin, float inputMax, float outputMin, float outputMax)
     {
         return Mathf.Clamp(((value - inputMin) / (inputMax - inputMin) * (outputMax - outputMin) + outputMin), outputMin, outputMax);
     }
+
+
+
+    /*******************Btn Changement de ligne*************************/
+
+    void BtnChangementLigne(OSCMessage oscMessage)
+    {
+        int value = oscMessage.Values[0].IntValue;
+
+        if (value == 1 && btnLigheEtat == false)
+        {
+            lignePosition++;
+            if (lignePosition == 4)
+            {
+                lignePosition = 0;
+            }
+            btnLigheEtat = true;
+            print(btnLigheEtat);
+        }
+        else if (value == 0 && btnLigheEtat == true)
+        {
+            btnLigheEtat = false;
+        }
+    }
+
+    /*******************Controle de la musique*************************/
+    void ControleMusique(OSCMessage oscMessage)
+    {
+        float value = MathF.Round(ScaleValue(oscMessage.Values[0].IntValue, 0,500, 0, 3));
+        Debug.Log(value);
+
+    }
+
 
     /*******************CHANGEMENT DE LA ROCHE SELECTIONNER*************************/
     void BtnChangementPierre(OSCMessage oscMessage)
