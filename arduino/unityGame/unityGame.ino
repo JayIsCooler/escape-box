@@ -19,16 +19,20 @@ M5_PbHub myPbHub;
 Unit_Encoder myEncoder;
 int myEncoderPreviousRotation;
 
+#include <VL53L0X.h>
+VL53L0X myTOF;
+
 #include <MicroOscSlip.h>
 MicroOscSlip<1024> myMicroOsc(&Serial);
 
 //<MicroOscUdp.h>
 //MicroOscUdp<1024> myMicroOsc(&myUdp,myDestinationIp,myDestinationPort);
 
-#define KEY_UNIT_CHANNEL 4
+#define KEY3_UNIT_CHANNEL 2
+#define KEY2_UNIT_CHANNEL 4
 #define ANGLE_UNIT_CHANNEL 3
-#define PIR_UNIT_CHANNEL 2
 #define LIGHT_UNIT_CHANNEL 1
+#define KEY1_UNIT_CHANNEL 0
 
 //#include <SPI.h>
 //#include <Ethernet.h>
@@ -56,11 +60,14 @@ void setup() {
 
   myPbHub.begin();
 
-  myPbHub.setPixelCount(KEY_UNIT_CHANNEL, 1);
+  myPbHub.setPixelCount(KEY1_UNIT_CHANNEL, 1);
 
   Wire.begin();
 
   myEncoder.begin();
+  myTOF.init();
+  myTOF.setTimeout(500);
+  myTOF.startContinuous();
 
   // ANIMATION DE DÉMARRAGE
   while (millis() < 5000) {
@@ -76,10 +83,10 @@ void myOscMessageParser(MicroOscMessage& receivedOscMessage) {
   if (receivedOscMessage.checkOscAddress("/pixel")) {
     int lumiere = receivedOscMessage.nextAsInt();
 
-    myPbHub.setPixelColor(KEY_UNIT_CHANNEL, 0, lumiere, lumiere, lumiere);
+    //myPbHub.setPixelColor(KEY_UNIT_CHANNEL, 0, lumiere, lumiere, lumiere);
  
   } else {
-    myPbHub.setPixelColor(KEY_UNIT_CHANNEL, 0, 0, 0, 0);
+    //myPbHub.setPixelColor(KEY_UNIT_CHANNEL, 0, 0, 0, 0);
   }
 }
 
@@ -94,12 +101,23 @@ void loop() {
     monChronoDepart = millis();            // ...REDÉMARRER LE CHRONOMÈTRE...
     //Serial.print(maValeurKey);
     //Serial.print("KEY: ");
-    int maValeurKey = myPbHub.digitalRead(KEY_UNIT_CHANNEL);
+    int maValeurKey = myPbHub.digitalRead(KEY1_UNIT_CHANNEL);
     // Allumer le pixel du KEY si son bouton est appuyé
     if (maValeurKey == 0) {
-      myMicroOsc.sendInt("/key", 1);
+      myMicroOsc.sendInt("/key1", 1);
     } else {
-      myMicroOsc.sendInt("/key", 0);
+      myMicroOsc.sendInt("/key1", 0);
+    }
+
+ uint16_t tofValue = myTOF.readRangeContinuousMillimeters();
+ myMicroOsc.sendInt("/tof", tofValue);
+
+  int maValeurKey2 = myPbHub.digitalRead(KEY2_UNIT_CHANNEL);
+    // Allumer le pixel du KEY si son bouton est appuyé
+    if (maValeurKey2 == 0) {
+      myMicroOsc.sendInt("/key2", 1);
+    } else {
+      myMicroOsc.sendInt("/key2", 0);
     }
 
     //Serial.print(maValeurAngle);
@@ -107,11 +125,13 @@ void loop() {
     int maValeurAngle = myPbHub.analogRead(ANGLE_UNIT_CHANNEL);
     myMicroOsc.sendInt("/pot", maValeurAngle);
 
-    //Serial.print(maValeurPir);
-    //Serial.print(" PIR: ");
-    int maValeurPir = myPbHub.digitalRead(PIR_UNIT_CHANNEL);
-    myMicroOsc.sendInt("/motion", maValeurPir);
-
+   int maValeurKey3 = myPbHub.digitalRead(KEY3_UNIT_CHANNEL);
+    // Allumer le pixel du KEY si son bouton est appuyé
+    if (maValeurKey3 == 0) {
+      myMicroOsc.sendInt("/key3", 1);
+    } else {
+      myMicroOsc.sendInt("/key3", 0);
+    }
 
     //Serial.print(maValeurLight);
     //Serial.print(" LIGHT: ");
@@ -153,4 +173,4 @@ void loop() {
     }
   }
   //Serial.println();
-}
+  }

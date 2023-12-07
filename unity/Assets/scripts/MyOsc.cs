@@ -26,8 +26,11 @@ public class MyOsc : MonoBehaviour
     public GameObject lumierePlafond;
 
     private bool btnRocheEtat;
-    private bool btnRochePrete;
-    private int rochePosition = 1;
+    private int rochePosition = 0;
+    private bool roche1Combinaison;
+    private bool roche2Combinaison;
+    private bool roche3Combinaison;
+    private bool roche4Combinaison;
 
     public GameObject[] rochesArr;
 
@@ -54,11 +57,12 @@ public class MyOsc : MonoBehaviour
         if (value == 1 && btnRocheEtat == false)
         {
             rochePosition++;
-            if(rochePosition == 5)
+            if(rochePosition == 4)
             {
                 rochePosition = 0;
             }
             btnRocheEtat = true;
+            print(rochePosition);
         }
         else if (value == 0 && btnRocheEtat == true)
         {
@@ -70,26 +74,40 @@ public class MyOsc : MonoBehaviour
     void PotMessageReceived(OSCMessage oscMessage)
     {
 
-        float value = ScaleValue(oscMessage.Values[0].FloatValue, 0, 4095, 40, 320);
+        float value = ScaleValue(oscMessage.Values[0].IntValue, 0, 4095, 0, 360);
+       
 
-        if(rochePosition == 1)
-        {
-            rochesArr[0].transform.eulerAngles = new Vector3(value, 0, 0);
-        }
-        if (rochePosition == 2)
-        {
-            rochesArr[1].transform.eulerAngles = new Vector3(value, 0, 0);
-        }
-        if (rochePosition == 3)
-        {
-            rochesArr[2].transform.eulerAngles = new Vector3(value, 0, 0);
-        }
-        if (rochePosition == 4)
-        {
-            rochesArr[3].transform.eulerAngles = new Vector3(value, 0, 0);
-        }
+        rochesArr[rochePosition].transform.eulerAngles = new Vector3(value, 0, 0);
 
-
+        if (value >= 0 && value <= 10 && rochePosition == 0)
+        {
+            roche1Combinaison = true;
+        }
+        else if(value !>= 0 && value !<= 10 && rochePosition == 0)
+        { roche1Combinaison = false; }
+        if (value >= 85 && value <= 95 && rochePosition == 1)
+        {
+            roche2Combinaison = true;
+        }
+        else if (value !>= 85 && value !<= 95 && rochePosition == 0)
+        { roche1Combinaison = false; }
+        if (value >= 175 && value <= 185 && rochePosition == 2)
+        {
+            roche3Combinaison = true;
+        }
+        else if (value !>= 175 && value !<= 185 && rochePosition == 0)
+        { roche1Combinaison = false; }
+        if (value >= 265 && value <= 275 && rochePosition == 3)
+        {
+            roche4Combinaison = true;
+        }
+        else if (value !>= 265 && value !<= 275 && rochePosition == 0)
+        { roche1Combinaison = false; }
+        if (roche1Combinaison == true && roche2Combinaison == true && roche3Combinaison == true && roche4Combinaison == true)
+        {
+            Debug.Log("vous avez réussis :D");
+        }
+        else { Debug.Log(value); }
 
     }
 
