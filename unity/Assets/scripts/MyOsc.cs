@@ -14,12 +14,8 @@ public class MyOsc : MonoBehaviour
     public extOSC.OSCReceiver oscReceiver;
     public extOSC.OSCTransmitter oscTransmitter;
 
-    public GameObject sphere;
-
-
     public GameObject blackLight;
     private bool blackLightEtat;
-    private bool blackLightBtnPrete = false;
 
     public GameObject objetSecretsContainer;
 
@@ -31,20 +27,29 @@ public class MyOsc : MonoBehaviour
     private bool roche2Combinaison;
     private bool roche3Combinaison;
     private bool roche4Combinaison;
+   
 
-    public GameObject[] ligne1;
-    public GameObject[] ligne2;
-    public GameObject[] ligne3;
-    public GameObject[] ligne4;
+    public GameObject[] ligneNotes;
+
     private bool btnLigheEtat;
-    private int lignePosition = 0;
-
+    public List<int> melodie;
+    public List<int> melodieJoueur;
+    private int verifMelodi = 0;
     public GameObject[] rochesArr;
 
 
+    public bool reussisDefis1 = false;
+    public bool reussisDefis2 = false;
+
+    public GameObject crystal1;
+    public GameObject crystal2;
+
+    public GameObject melodiSon;
+    public GameObject mauvaiseMelodi;
+    private bool fin;
+    public GameObject imageFin;
     void Start()
     {
-        oscReceiver.Bind("/encoder", RotationMessageReceived);
         oscReceiver.Bind("/key1", ButtonMessageReceived);
         oscReceiver.Bind("/key2", BtnChangementPierre);
         oscReceiver.Bind("/key3", BtnChangementLigne);
@@ -67,17 +72,69 @@ public class MyOsc : MonoBehaviour
 
         if (value == 1 && btnLigheEtat == false)
         {
-            lignePosition++;
-            if (lignePosition == 4)
+            if(fin == true)
             {
-                lignePosition = 0;
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
             btnLigheEtat = true;
-            print(btnLigheEtat);
+            for (int i = 0; i < ligneNotes.Length; i++)
+            {
+
+                if (ligneNotes[i].activeInHierarchy == true)
+                {
+                    ligneNotes[i].GetComponent<AudioSource>().Play();
+
+                }
+            }
         }
         else if (value == 0 && btnLigheEtat == true)
         {
+            
+           
+            for(int i = 0; i < ligneNotes.Length; i++)
+            {
+                
+                    if(ligneNotes[i].activeInHierarchy == true)
+                {
+                    melodieJoueur.Add(int.Parse(ligneNotes[i].name));
+                    
+                    
+                }
+            }
             btnLigheEtat = false;
+        }
+        else if (melodieJoueur.Count == 4)
+        {
+            if (melodieJoueur[0] == melodie[0])
+            {
+                verifMelodi++;
+            }
+            if (melodieJoueur[1] == melodie[1])
+            {
+                verifMelodi++;
+            }
+            if (melodieJoueur[2] == melodie[2])
+            {
+                verifMelodi++;
+            }
+            if (melodieJoueur[3] == melodie[3])
+            {
+                verifMelodi++;
+            }
+            if (verifMelodi == 4)
+            {
+                Debug.Log("réussis!");
+                reussisDefis2 = true;
+                crystal1.SetActive(true);
+            }
+            else
+            {
+                melodieJoueur.Clear();
+                mauvaiseMelodi.GetComponent<AudioSource>().Play();
+            }
+
+
+
         }
     }
 
@@ -85,25 +142,47 @@ public class MyOsc : MonoBehaviour
     void ControleMusique(OSCMessage oscMessage)
     {
         int value = (int) MathF.Round(ScaleValue(oscMessage.Values[0].IntValue, 0, 500, 0, 3));
-        Debug.Log(value);
+        
+        if(reussisDefis2 == false)
+        {
 
-        if (lignePosition == 0)
+        
+        if (value == 0)
         {
-            ligne1[value].SetActive(true);
+            ligneNotes[0].SetActive(true);
+            ligneNotes[1].SetActive(false);
+            ligneNotes[2].SetActive(false);
+            ligneNotes[3].SetActive(false);
         }
-        else if (lignePosition == 1)
+        if (value == 1)
         {
-            ligne2[value].SetActive(true);
+            ligneNotes[0].SetActive(false);
+            ligneNotes[1].SetActive(true);
+            ligneNotes[2].SetActive(false);
+            ligneNotes[3].SetActive(false);
         }
-        else if (lignePosition == 2)
+        if (value == 2)
         {
-            ligne3[value].SetActive(true);
+            ligneNotes[0].SetActive(false);
+            ligneNotes[1].SetActive(false);
+            ligneNotes[2].SetActive(true);
+            ligneNotes[3].SetActive(false);
         }
-        else if (lignePosition == 3)
+        if (value == 3)
         {
-            ligne4[value].SetActive(true);
+            ligneNotes[0].SetActive(false);
+            ligneNotes[1].SetActive(false);
+            ligneNotes[2].SetActive(false);
+            ligneNotes[3].SetActive(true);
         }
-
+        }
+        else if (reussisDefis2 == true)
+        {
+            ligneNotes[0].SetActive(false);
+            ligneNotes[1].SetActive(false);
+            ligneNotes[2].SetActive(false);
+            ligneNotes[3].SetActive(false);
+        }
     }
 
 
@@ -115,13 +194,16 @@ public class MyOsc : MonoBehaviour
 
         if (value == 1 && btnRocheEtat == false)
         {
+            if (fin == true)
+            {
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            }
             rochePosition++;
             if(rochePosition == 4)
             {
                 rochePosition = 0;
             }
             btnRocheEtat = true;
-            print(rochePosition);
         }
         else if (value == 0 && btnRocheEtat == true)
         {
@@ -134,72 +216,47 @@ public class MyOsc : MonoBehaviour
     {
 
         float value = ScaleValue(oscMessage.Values[0].IntValue, 0, 4095, 0, 360);
-       
 
-        rochesArr[rochePosition].transform.eulerAngles = new Vector3(value, 0, 0);
 
-        if (value >= 0 && value <= 10 && rochePosition == 0)
+
+      if (reussisDefis1 == false) {
+            rochesArr[rochePosition].transform.eulerAngles = new Vector3(value, 0, 0);
+            if (value >= 175 && value <= 185 && rochePosition == 0)
         {
             roche1Combinaison = true;
+
         }
-        else if(value !>= 0 && value !<= 10 && rochePosition == 0)
-        { roche1Combinaison = false; }
-        if (value >= 85 && value <= 95 && rochePosition == 1)
+        else if(value !>= 175 && value !<= 185 && rochePosition == 0)
+        { roche1Combinaison = false;
+                }
+        if (value >= 265 && value <= 275 && rochePosition == 1)
         {
             roche2Combinaison = true;
         }
-        else if (value !>= 85 && value !<= 95 && rochePosition == 0)
-        { roche1Combinaison = false; }
-        if (value >= 175 && value <= 185 && rochePosition == 2)
+        else if (value !>= 265 && value !<= 275 && rochePosition == 1)
+        { roche1Combinaison = false;
+        }
+        if (value >= 340 && value <= 365 &&  rochePosition == 2)
         {
             roche3Combinaison = true;
         }
-        else if (value !>= 175 && value !<= 185 && rochePosition == 0)
-        { roche1Combinaison = false; }
-        if (value >= 265 && value <= 275 && rochePosition == 3)
+        else if (value ! >= 340 && value !<= 365 && rochePosition == 2)
+        { roche1Combinaison = false;
+        }
+        if (value >= 85 && value <= 95 && rochePosition == 3)
         {
             roche4Combinaison = true;
         }
-        else if (value !>= 265 && value !<= 275 && rochePosition == 0)
-        { roche1Combinaison = false; }
+        else if (value !>= 85 && value !<= 95 && rochePosition == 3)
+        { roche1Combinaison = false;
+        }
         if (roche1Combinaison == true && roche2Combinaison == true && roche3Combinaison == true && roche4Combinaison == true)
         {
-            Debug.Log("vous avez réussis :D");
-        }
-        else { Debug.Log(value); }
-
+            reussisDefis1 = true;
+                crystal2.SetActive(true);
+            }
+      }
     }
-
-
-
-    /********************************CODE POUR LA COMBINAISON ET LE ENCODER***************************************/
-    void RotationMessageReceived(OSCMessage oscMessage)
-    {
-        float value;
-        if (oscMessage.Values[0].Type == OSCValueType.Int)
-        {
-            value = oscMessage.Values[0].IntValue;
-        }
-        else if (oscMessage.Values[0].Type == OSCValueType.Float)
-        {
-            value = oscMessage.Values[0].FloatValue;
-        }
-        else
-        {
-            return;
-        }
-
-        if (value < 0)
-        {
-            sphere.transform.Rotate(sphere.transform.rotation.x + 10, sphere.transform.rotation.y ,sphere.transform.rotation.z);
-        }
-        else if (value > 0)
-        {
-            sphere.transform.Rotate(sphere.transform.rotation.x - 10, sphere.transform.rotation.y, sphere.transform.rotation.z);
-        }
-  
-    }
-
 
     /********************************CODE POUR LA BLACKLIGHT ET LE KEY UNIT***************************************/
 
@@ -209,26 +266,21 @@ public class MyOsc : MonoBehaviour
     {
        int value = oscMessage.Values[0].IntValue;
 
-        if (value == 1 && blackLightEtat == false && blackLightBtnPrete == false)
+        if (value == 1 && blackLightEtat == false)
         {
+            if (fin == true)
+            {
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            }
             blackLight.SetActive(true);
  
             blackLightEtat = true;
         }
-        else if (value == 0 && blackLightEtat == true && blackLightBtnPrete == false)
+        else if (value == 0 && blackLightEtat == true)
         {
-            blackLightBtnPrete = true;
-        }
-        else if (value == 1 && blackLightEtat == true && blackLightBtnPrete == true)
-        {
-            blackLight.SetActive(false);
             blackLightEtat = false;
+            blackLight.SetActive(false);
         }
-        else if (value == 0 && blackLightEtat == false && blackLightBtnPrete == true)
-        {
-            blackLightBtnPrete = false;
-        }
-       
 
 
     }
@@ -267,13 +319,27 @@ public class MyOsc : MonoBehaviour
 
     private void Update()
     {
-        if (blackLight.activeInHierarchy == true && lumierePlafond.GetComponent<Light>().intensity <= 0.5)
+        if (blackLight.activeInHierarchy == true && lumierePlafond.GetComponent<Light>().intensity <= 0.8)
         {
             objetSecretsContainer.SetActive(true);
         }
-        else
+        else if (lumierePlafond.GetComponent<Light>().intensity <= 1)
+        {
+            melodiSon.SetActive(false);
+        }
+        else if (lumierePlafond.GetComponent<Light>().intensity >= 1)
+        {
+            melodiSon.SetActive(true);
+        }
+        if (lumierePlafond.GetComponent<Light>().intensity >= 0.8)
         {
             objetSecretsContainer.SetActive(false);
+        }
+
+        if(reussisDefis1 == true && reussisDefis2 == true)
+        {
+            imageFin.SetActive(true);
+            fin = true;
         }
     }
 
@@ -306,4 +372,7 @@ public class MyOsc : MonoBehaviour
     **/
     }
 
+
+
+  
 }

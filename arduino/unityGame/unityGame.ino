@@ -15,10 +15,6 @@ CRGB mesPixels[1];
 #include <M5_PbHub.h>
 M5_PbHub myPbHub;
 
-#include "Unit_Encoder.h"
-Unit_Encoder myEncoder;
-int myEncoderPreviousRotation;
-
 #include <VL53L0X.h>
 VL53L0X myTOF;
 
@@ -64,7 +60,6 @@ void setup() {
 
   Wire.begin();
 
-  myEncoder.begin();
   myTOF.init();
   myTOF.setTimeout(500);
   myTOF.startContinuous();
@@ -139,38 +134,6 @@ void loop() {
     myMicroOsc.sendInt("/light", maValeurLight);
 
 
-    int encoderRotation = myEncoder.getEncoderValue();
-    int encoderRotationChange = encoderRotation - myEncoderPreviousRotation;
-    myEncoderPreviousRotation = encoderRotation;
-    myMicroOsc.sendInt("/encoder", encoderRotationChange);
-
-    int encoderButton = myEncoder.getButtonStatus();
-    // myMicroOsc.sendInt("/buttonEncoder", encoderButton);
-    
-    if(encoderButton == 1){
-      myMicroOsc.sendInt("/buttonEncoder",0);
-    }else{
-      myMicroOsc.sendInt("/buttonEncoder", 1);
-    }
-
-    uint32_t myColorOn = 0xfb6f92;
-    uint32_t myColorOff = 0x000000;
-
-    if (encoderButton == 0) {
-      myEncoder.setLEDColor(2, myColorOn);
-      myEncoder.setLEDColor(1, myColorOn);
-    } else {
-      if (encoderRotationChange > 0) {
-        myEncoder.setLEDColor(1, myColorOn);
-        myEncoder.setLEDColor(2, myColorOff);
-      } else if (encoderRotationChange < 0) {
-        myEncoder.setLEDColor(1, myColorOff);
-        myEncoder.setLEDColor(2, myColorOn);
-      } else {
-        myEncoder.setLEDColor(1, myColorOff);
-        myEncoder.setLEDColor(2, myColorOff);
-      }
-    }
   }
   //Serial.println();
   }
