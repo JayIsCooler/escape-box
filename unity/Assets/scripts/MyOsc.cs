@@ -15,22 +15,84 @@ public class MyOsc : MonoBehaviour
     public extOSC.OSCTransmitter oscTransmitter;
 
     public GameObject sphere;
+
+
     public GameObject blackLight;
     private bool blackLightEtat;
+    private bool blackLightBtnPrete = false;
+
     public GameObject objetSecretsContainer;
+
     public GameObject lumierePlafond;
 
+    private bool btnRocheEtat;
+    private bool btnRochePrete;
+    private int rochePosition = 1;
+
+    public GameObject[] rochesArr;
+
+
     void Start()
-    {
+    {   
         oscReceiver.Bind("/encoder", RotationMessageReceived);
-        oscReceiver.Bind("/key", ButtonMessageReceived);
+        oscReceiver.Bind("/key1", ButtonMessageReceived);
+        oscReceiver.Bind("/key2", BtnChangementPierre);
         oscReceiver.Bind("/light", lightMessageReceived);
-        //scReceiver.Bind("/pot", PotMessageReceived);
+        oscReceiver.Bind("/pot", PotMessageReceived);
     }
     public static float ScaleValue(float value, float inputMin, float inputMax, float outputMin, float outputMax)
     {
         return Mathf.Clamp(((value - inputMin) / (inputMax - inputMin) * (outputMax - outputMin) + outputMin), outputMin, outputMax);
     }
+
+    /*******************CHANGEMENT DE LA ROCHE SELECTIONNER*************************/
+    void BtnChangementPierre(OSCMessage oscMessage)
+    {
+
+        int value = oscMessage.Values[0].IntValue;
+
+        if (value == 1 && btnRocheEtat == false)
+        {
+            rochePosition++;
+            if(rochePosition == 5)
+            {
+                rochePosition = 0;
+            }
+            btnRocheEtat = true;
+        }
+        else if (value == 0 && btnRocheEtat == true)
+        {
+            btnRocheEtat = false;
+        }
+
+    }
+    /*******************ROTATION DES ROCHES*************************/
+    void PotMessageReceived(OSCMessage oscMessage)
+    {
+
+        float value = ScaleValue(oscMessage.Values[0].FloatValue, 0, 4095, 40, 320);
+
+        if(rochePosition == 1)
+        {
+            rochesArr[0].transform.eulerAngles = new Vector3(value, 0, 0);
+        }
+        if (rochePosition == 2)
+        {
+            rochesArr[1].transform.eulerAngles = new Vector3(value, 0, 0);
+        }
+        if (rochePosition == 3)
+        {
+            rochesArr[2].transform.eulerAngles = new Vector3(value, 0, 0);
+        }
+        if (rochePosition == 4)
+        {
+            rochesArr[3].transform.eulerAngles = new Vector3(value, 0, 0);
+        }
+
+
+
+    }
+
 
 
     /********************************CODE POUR LA COMBINAISON ET LE ENCODER***************************************/
@@ -64,7 +126,7 @@ public class MyOsc : MonoBehaviour
 
     /********************************CODE POUR LA BLACKLIGHT ET LE KEY UNIT***************************************/
 
-    private bool blackLightBtnPrete = false;
+ 
  
     void ButtonMessageReceived(OSCMessage oscMessage)
     {
@@ -145,18 +207,6 @@ public class MyOsc : MonoBehaviour
 
 
 
-
-    /**
-    void PotMessageReceived(OSCMessage oscMessage)
-    {
-       
-        float valeur = oscMessage.Values[0].IntValue; // ScaleValue(oscMessage.Values[0].IntValue, 0, 4095, 40, 320);
-        float rotation = ScaleValue(valeur, 0, 4095, 0, 362);
-        boite.transform.eulerAngles = new Vector3(0, 0, rotation);
-        Debug.Log(valeur);
-    }
-
-    **/
 
     // Update is called once per frame
 
