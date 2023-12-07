@@ -84,8 +84,25 @@ public class MyOsc : MonoBehaviour
     /*******************Controle de la musique*************************/
     void ControleMusique(OSCMessage oscMessage)
     {
-        float value = MathF.Round(ScaleValue(oscMessage.Values[0].IntValue, 0,500, 0, 3));
+        int value = (int) MathF.Round(ScaleValue(oscMessage.Values[0].IntValue, 0, 500, 0, 3));
         Debug.Log(value);
+
+        if (lignePosition == 0)
+        {
+            ligne1[value].SetActive(true);
+        }
+        else if (lignePosition == 1)
+        {
+            ligne2[value].SetActive(true);
+        }
+        else if (lignePosition == 2)
+        {
+            ligne3[value].SetActive(true);
+        }
+        else if (lignePosition == 3)
+        {
+            ligne4[value].SetActive(true);
+        }
 
     }
 
